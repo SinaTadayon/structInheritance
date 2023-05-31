@@ -1,0 +1,2 @@
+# structureInherirance
+Solidity Structure Inheritance 
