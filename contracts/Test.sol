@@ -108,6 +108,28 @@ contract Test {
     require(bytes(decisionTemp.choose).length == bytes("Choose One?").length, "Invalid Choose");
   }
 
+   function downcastingDynamicArrayStructs() public {
+     uint128 start = uint128(block.timestamp) + 200;
+     uint128 end = uint128(block.timestamp) + 2000;
+    DecisionProposal storage decision = downCastingToDecision2(0);
+    decision.baseProposal = BaseProposal({
+      id: 10,
+      voteStartAt: start,
+      voteEndAt: end,
+      ptype: ProposalType.DECISION
+    });
+    decision.choose = "Choose One?";
+
+    require(dynamicArrayProposals[0].id == 10, "Invalid Id");
+    require(dynamicArrayProposals[0].voteStartAt == start, "Invalid Start");
+    require(dynamicArrayProposals[0].voteEndAt == end, "Invalid End");
+    require(dynamicArrayProposals[0].ptype == ProposalType.DECISION, "Invalid Type");
+    
+    DecisionProposal storage decisionTemp = downCastingToDecision2(0);
+    require(bytes(decisionTemp.choose).length == bytes("Choose One?").length, "Invalid Choose");
+  }
+
+
   function storeArray() public {    
     proposals[0] = BaseProposal({
       id: 1,
@@ -157,12 +179,30 @@ contract Test {
     view
     returns (DecisionProposal storage ep)
   {
-    require(index < 3, "Invalid Index");
     BaseProposal storage bp = fixedArrayProposals[index];
     if (bp.ptype == ProposalType.DECISION) {
       assembly {
         // let ptr := mload(0x40)
-        ep.slot := sub(bp.slot, 0x40)
+        ep.slot := bp.slot
+        // mstore(add(ptr, 0x00), proposalId)
+        // mstore(add(ptr, 0x20), add(fixedArrayProposals.slot, 8))
+        // ep.slot := keccak256(ptr, 0x40)
+      }    
+    } else {
+      revert("Illeagl Proposal");
+    }
+  }
+
+   function downCastingToDecision2(uint256 index)
+    internal
+    view
+    returns (DecisionProposal storage ep)
+  {
+    BaseProposal storage bp = dynamicArrayProposals[index];
+    if (bp.ptype == ProposalType.DECISION) {
+      assembly {
+        // let ptr := mload(0x40)
+        ep.slot := bp.slot
         // mstore(add(ptr, 0x00), proposalId)
         // mstore(add(ptr, 0x20), add(fixedArrayProposals.slot, 8))
         // ep.slot := keccak256(ptr, 0x40)
