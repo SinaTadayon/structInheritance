@@ -1,2 +1,2 @@
-# structure Inheritance
+# Structure Inheritance
 Solidity Structure Inheritance 
