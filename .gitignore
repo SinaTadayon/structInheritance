@@ -118,4 +118,6 @@ artifacts
 .idea/
 .vscode/
 
+# dep
+.dep/
 
