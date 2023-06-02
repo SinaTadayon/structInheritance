@@ -10,106 +10,73 @@ import "./ICommon.sol";
  *
  */
 library LStructCastStorage {
-  function mapCastToDecision(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId)
+  function storageDecision(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
     internal
     view
     returns (ICommon.DecisionProposal storage dp)
   {
-    ICommon.BaseProposal storage bp = proposalMaps[proposalId];
-    if (bp.ptype == ICommon.ProposalType.DECISION) {
-      assembly {
-        let ptr := mload(0x40)
-        mstore(add(ptr, 0x00), proposalId)
-        mstore(add(ptr, 0x20), add(proposalMaps.slot, 8))
-        dp.slot := keccak256(ptr, 0x40)
-      }    
+    assembly {
+      let ptr := mload(0x40)
+      mstore(add(ptr, 0x00), proposalId)
+      mstore(add(ptr, 0x20), proposalMaps.slot)
+      dp.slot := keccak256(ptr, 0x40)
+    }
+    if(atype == ICommon.ActionType.GET) {
+      require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illeagl Proposal");
     } else {
-      revert("Illeagl Proposal");
+      require(
+        dp.baseProposal.ptype == ICommon.ProposalType.NONE || 
+        dp.baseProposal.ptype == ICommon.ProposalType.DECISION, 
+        "Illeagl Proposal"
+      );      
     }
   }
 
-  function mapCastToAuction(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId)
+  function storageAuction(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
     internal
     view
     returns (ICommon.AuctionProposal storage ap)
   {
-    ICommon.BaseProposal storage bp = proposalMaps[proposalId];
-    if (bp.ptype == ICommon.ProposalType.AUCTION) {
-      assembly {
-        let ptr := mload(0x40)
-        mstore(add(ptr, 0x00), proposalId)
-        mstore(add(ptr, 0x20), add(proposalMaps.slot, 8))
-        ap.slot := keccak256(ptr, 0x40)
-      }    
+    assembly {
+      let ptr := mload(0x40)
+      mstore(add(ptr, 0x00), proposalId)
+      mstore(add(ptr, 0x20), proposalMaps.slot)
+      ap.slot := keccak256(ptr, 0x40)
+    }
+    if(atype == ICommon.ActionType.GET) {
+      require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illeagl Proposal");
     } else {
-      revert("Illeagl Proposal");
+      require(
+        ap.baseProposal.ptype == ICommon.ProposalType.NONE || 
+        ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, 
+        "Illeagl Proposal"
+      );      
     }
   }
 
-  function mapCastToElection(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId)
+  function storageElection(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
     internal
     view
     returns (ICommon.ElectionProposal storage ep)
   {
-    ICommon.BaseProposal storage bp = proposalMaps[proposalId];
-    if (bp.ptype == ICommon.ProposalType.ELECTION) {
-      assembly {
-        let ptr := mload(0x40)
-        mstore(add(ptr, 0x00), proposalId)
-        mstore(add(ptr, 0x20), add(proposalMaps.slot, 8))
-        ep.slot := keccak256(ptr, 0x40)
-      }    
-    } else {
-      revert("Illeagl Proposal");
+    assembly {
+      let ptr := mload(0x40)
+      mstore(add(ptr, 0x00), proposalId)
+      mstore(add(ptr, 0x20), proposalMaps.slot)
+      ep.slot := keccak256(ptr, 0x40)
     }
-  }
-
-  function getDecision(ICommon.BaseProposal[3] storage fixedArrayProposals, uint256 index)
-    internal
-    view
-    returns (ICommon.DecisionProposal storage dp)
-  {    
-    ICommon.BaseProposal storage bp = fixedArrayProposals[index];
-    if (bp.ptype == ICommon.ProposalType.DECISION) {
-      assembly {        
-        dp.slot := bp.slot
-      }    
+    if(atype == ICommon.ActionType.GET) {
+      require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illeagl Proposal");
     } else {
-      revert("Illeagl Proposal");
+      require(
+        ep.baseProposal.ptype == ICommon.ProposalType.NONE || 
+        ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, 
+        "Illeagl Proposal"
+      );      
     }
+    require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illeagl Proposal");
   }
-
-  function getAuction(ICommon.BaseProposal[3] storage fixedArrayProposals, uint256 index)
-    internal
-    view
-    returns (ICommon.AuctionProposal storage ap)
-  {
-    ICommon.BaseProposal storage bp = fixedArrayProposals[index];
-    if (bp.ptype == ICommon.ProposalType.AUCTION) {
-      assembly {        
-        ap.slot := bp.slot
-      }    
-    } else {
-      revert("Illeagl Proposal");
-    }
-  }
-
-  function getElection(ICommon.BaseProposal[3] storage fixedArrayProposals, uint256 index)
-    internal
-    view
-    returns (ICommon.ElectionProposal storage ep)
-  {
-    ICommon.BaseProposal storage bp = fixedArrayProposals[index];
-    if (bp.ptype == ICommon.ProposalType.ELECTION) {
-      assembly {        
-        ep.slot := bp.slot
-      }    
-    } else {
-      revert("Illeagl Proposal");
-    }
-  }
-
-
+  
   function getDecision(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 index)
     internal
     view

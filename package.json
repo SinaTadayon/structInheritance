@@ -16,7 +16,8 @@
     "test:gas": "REPORT_GAS=true yarn run hardhat test",
     "deploy:local": "yarn run hardhat deploy --network localhost",
     "node-deploy:local": "TS_NODE_FILES=true yarn run ts-node scripts/deploy.ts",
-    "build": "run-s clean compile"
+    "build": "run-s clean compile",
+    "remixd": "remixd -s $INIT_CWD --remix-ide https://remix.ethereum.org"
   },
   "repository": {
     "type": "git",
@@ -62,6 +63,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.3",
-    "@openzeppelin/contracts-upgradeable": "^4.8.3"
+    "@openzeppelin/contracts-upgradeable": "^4.8.3",
+    "@remix-project/remixd": "^0.6.14"
   }
 }

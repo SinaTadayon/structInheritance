@@ -4,9 +4,15 @@ pragma solidity 0.8.19;
 
 contract ICommon {
   enum ProposalType {
+    NONE,
     DECISION,
     AUCTION,
     ELECTION
+  }
+
+  enum ActionType {
+    SET,
+    GET
   }
 
   struct BaseProposal {
