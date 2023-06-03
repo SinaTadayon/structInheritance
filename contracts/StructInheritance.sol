@@ -3,19 +3,17 @@
 pragma solidity 0.8.19;
 
 import "./ICommon.sol";
-import "./LStructCastStorage.sol";
-
-import "hardhat/console.sol";
+import "./LCastingStruct.sol";
 
 contract StrucInheritance {  
-  using LStructCastStorage for *;
+  using LCastingStruct for *;
 
   mapping(bytes32 => ICommon.BaseProposal) internal proposalMaps;
   ICommon.BaseProposal[] internal dynamicArrayProposals;
 
-  ICommon.DecisionProposal internal  decisionProposal;
   ICommon.AuctionProposal  internal  auctionProposal;
   ICommon.ElectionProposal internal  electionProposal;
+  ICommon.DecisionProposal internal  decisionProposal;
   
   constructor() {
 
@@ -51,9 +49,7 @@ contract StrucInheritance {
         ptype: ICommon.ProposalType.ELECTION
       }),
       nominators: candidators
-    });      
-
-    
+    });          
   }
 
   function mappingTest() public {
@@ -88,15 +84,15 @@ contract StrucInheritance {
     });
     election.nominators = electionProposal.nominators;
 
-    // Test 0 index
+    // Get ID 10
     ICommon.DecisionProposal storage decisionTemp = proposalMaps.storageDecision(keccak256(abi.encodePacked(uint(10))), ICommon.ActionType.GET);
     require(decisionTemp.baseProposal.id == 10, "Invalid Id");
     require(decisionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
     require(decisionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
     require(decisionTemp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");   
-    require(bytes(decisionTemp.choose).length == bytes("Choose One?").length, "Invalid Choose");
+    require(keccak256(abi.encodePacked(decisionTemp.choose)) == keccak256(abi.encodePacked("Choose One?")), "Invalid Choose");
 
-    // Test 1 index
+    // Get ID 11
     ICommon.AuctionProposal storage auctionTemp = proposalMaps.storageAuction(keccak256(abi.encodePacked(uint(11))), ICommon.ActionType.GET);
     require(auctionTemp.baseProposal.id == 11, "Invalid Id");
     require(auctionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
@@ -105,7 +101,7 @@ contract StrucInheritance {
     require(auctionTemp.minPrice == 1000, "Invalid Price");
     require(auctionTemp.stuffID == keccak256(abi.encodePacked(uint8(200))), "Invalid SuffID");
         
-    // Test 2 index
+    // Get ID 12
     ICommon.ElectionProposal storage electionTemp = proposalMaps.storageElection(keccak256(abi.encodePacked(uint(12))), ICommon.ActionType.GET);
     require(electionTemp.baseProposal.id == 12, "Invalid Id");
     require(electionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 400, "Invalid Start");
@@ -114,18 +110,8 @@ contract StrucInheritance {
     require(electionTemp.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
   }
   
-  function dynamicArrayTest() public {
-    // Decision Proposal
-    ICommon.DecisionProposal storage decision = dynamicArrayProposals.pushDecision();
-    decision.baseProposal = ICommon.BaseProposal({
-      id: 10,
-      voteStartAt: uint128(block.timestamp) + 200,
-      voteEndAt: uint128(block.timestamp) + 2000,
-      ptype: ICommon.ProposalType.DECISION
-    });
-    decision.choose = "Choose One?";
-
-    // Auction Proposal
+  function dynamicArrayTest() public {   
+    // Push Auction Proposal
     ICommon.AuctionProposal storage auction = dynamicArrayProposals.pushAuction();
     auction.baseProposal = ICommon.BaseProposal({
       id: 11,
@@ -136,7 +122,17 @@ contract StrucInheritance {
     auction.minPrice = 1000;
     auction.stuffID = keccak256(abi.encodePacked(uint8(200)));
 
-    // Election Proposal
+    // Push Decision Proposal
+    ICommon.DecisionProposal storage decision = dynamicArrayProposals.pushDecision();
+    decision.baseProposal = ICommon.BaseProposal({
+      id: 10,
+      voteStartAt: uint128(block.timestamp) + 200,
+      voteEndAt: uint128(block.timestamp) + 2000,
+      ptype: ICommon.ProposalType.DECISION
+    });
+    decision.choose = "Choose One?";
+
+    // Push Election Proposal
     ICommon.ElectionProposal storage election = dynamicArrayProposals.pushElection();    
     election.baseProposal = ICommon.BaseProposal({
       id: 12,
@@ -147,157 +143,102 @@ contract StrucInheritance {
     election.nominators = electionProposal.nominators;
 
 
-    // Test 0 index
-    ICommon.DecisionProposal storage decisionTemp = dynamicArrayProposals.getDecision(0);
-    require(decisionTemp.baseProposal.id == 10, "Invalid Id");
-    require(decisionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
-    require(decisionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
-    require(decisionTemp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");   
-    require(bytes(decisionTemp.choose).length == bytes("Choose One?").length, "Invalid Choose");
-
-    // Test 1 index
-    ICommon.AuctionProposal storage auctionTemp = dynamicArrayProposals.getAuction(1);
+    // Get Auction
+    ICommon.AuctionProposal storage auctionTemp = dynamicArrayProposals.getAuction(0);
     require(auctionTemp.baseProposal.id == 11, "Invalid Id");
     require(auctionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
     require(auctionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
     require(auctionTemp.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
     require(auctionTemp.minPrice == 1000, "Invalid Price");
     require(auctionTemp.stuffID == keccak256(abi.encodePacked(uint8(200))), "Invalid SuffID");
-        
-    // Test 2 index
+
+    // Get Decision
+    ICommon.DecisionProposal storage decisionTemp = dynamicArrayProposals.getDecision(1);
+    require(decisionTemp.baseProposal.id == 10, "Invalid Id");
+    require(decisionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
+    require(decisionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
+    require(decisionTemp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");   
+    require(keccak256(abi.encodePacked(decisionTemp.choose)) == keccak256(abi.encodePacked("Choose One?")), "Invalid Choose");
+    
+    // Get Election 
     ICommon.ElectionProposal storage electionTemp = dynamicArrayProposals.getElection(2);
     require(electionTemp.baseProposal.id == 12, "Invalid Id");
     require(electionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 400, "Invalid Start");
     require(electionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 4000, "Invalid End");
     require(electionTemp.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Invalid Type");
     require(electionTemp.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
-  }
 
-   function popTest() public {
+    // Pop Item
     dynamicArrayProposals.popItem();
     require(dynamicArrayProposals.length == 2, "Invalid Length");
 
-    // // Test 0 index
-    require(dynamicArrayProposals[0].id == 10, "Invalid Id");
-    // require(dynamicArrayProposals[0].voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
-    // require(dynamicArrayProposals[0].voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
-    require(dynamicArrayProposals[0].ptype == ICommon.ProposalType.DECISION, "Invalid Type");
-    
-    ICommon.DecisionProposal storage decisionTemp = dynamicArrayProposals.getDecision(0);
-    require(bytes(decisionTemp.choose).length == bytes("Choose One?").length, "Invalid Choose");
+     // Test Auction
+    ICommon.AuctionProposal storage popAuction = dynamicArrayProposals.getAuction(0);
+    require(popAuction.baseProposal.id == 11, "Invalid Id");
+    require(popAuction.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
+    require(popAuction.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
+    require(popAuction.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
+    require(popAuction.minPrice == 1000, "Invalid Price");
+    require(popAuction.stuffID == keccak256(abi.encodePacked(uint8(200))), "Invalid SuffID");
 
-     // Test 1 index
-    ICommon.AuctionProposal storage auctionTemp = dynamicArrayProposals.getAuction(1);
-    require(auctionTemp.baseProposal.id == 11, "Invalid Id");
-    // require(auctionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
-    // require(auctionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
-    require(auctionTemp.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
-    require(auctionTemp.minPrice == 1000, "Invalid Price");
-    require(auctionTemp.stuffID == keccak256(abi.encodePacked(uint8(200))), "Invalid SuffID");
+    // Test Decision
+    ICommon.DecisionProposal storage popDecision = dynamicArrayProposals.getDecision(1);
+    require(popDecision.baseProposal.id == 10, "Invalid Id");
+    require(popDecision.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
+    require(popDecision.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
+    require(popDecision.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");    
+    require(keccak256(abi.encodePacked(popDecision.choose)) == keccak256(abi.encodePacked("Choose One?")), "Invalid Choose");
 
+
+    // Pop Item
     dynamicArrayProposals.popItem();
     require(dynamicArrayProposals.length == 1, "Invalid Length");
-    // // Test 0 index
-    require(dynamicArrayProposals[0].id == 10, "Invalid Id");
-    // require(dynamicArrayProposals[0].voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
-    // require(dynamicArrayProposals[0].voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
-    require(dynamicArrayProposals[0].ptype == ICommon.ProposalType.DECISION, "Invalid Type");
-    
-    ICommon.DecisionProposal storage decisionTemp1 = dynamicArrayProposals.getDecision(0);
-    require(bytes(decisionTemp1.choose).length == bytes("Choose One?").length, "Invalid Choose");
 
+    popAuction = dynamicArrayProposals.getAuction(0);
+    require(popAuction.baseProposal.id == 11, "Invalid Id");
+    require(popAuction.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
+    require(popAuction.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
+    require(popAuction.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
+    require(popAuction.minPrice == 1000, "Invalid Price");
+    require(popAuction.stuffID == keccak256(abi.encodePacked(uint8(200))), "Invalid SuffID");
+
+
+    // // Test Decision
+    // popDecision = dynamicArrayProposals.getDecision(0);
+    // require(popDecision.baseProposal.id == 10, "Invalid Id");
+    // require(popDecision.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
+    // require(popDecision.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
+    // require(popDecision.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");    
+    // require(keccak256(abi.encodePacked(popDecision.choose)) == keccak256(abi.encodePacked("Choose One?")), "Invalid Choose");
+
+    // Pop Item
     dynamicArrayProposals.popItem();
     require(dynamicArrayProposals.length == 0, "Invalid Length");
   }
 
-
-  function castingStructsInMemory() public view {
+  function memoryTest() public view {
     ICommon.DecisionProposal memory dp = decisionProposal;
     ICommon.AuctionProposal memory ap = auctionProposal;    
     ICommon.ElectionProposal memory ep = electionProposal;
 
-    validateProposal(dp.baseProposal);
-    validateProposal(ap.baseProposal);
-    validateProposal(ep.baseProposal);
-
-
-    // proposalMaps[keccak256(abi.encodePacked(dp.baseProposal.id))] = dp.baseProposal;
-    // proposalMaps[keccak256(abi.encodePacked(ap.baseProposal.id))] = ap.baseProposal;
-    // proposalMaps[keccak256(abi.encodePacked(ep.baseProposal.id))] = ep.baseProposal;
-    // require(bytes(dp.choose).length == bytes("Test").length, "Invalid");
+    _validateProposal(dp.baseProposal);
+    _validateProposal(ap.baseProposal);
+    _validateProposal(ep.baseProposal);
   }
 
-//  function validateProposal(DecisionProposal memory dp) internal pure {
-//     // require(bp.id > 0, "Invalid ID");
-//     // require(bp.voteStartAt > block.timestamp && bp.voteEndAt > block.timestamp, "Illegal Timestamp");
-//     // require(bp.voteStartAt < bp.voteEndAt, "Illegal VoteStartAt");
-//     // if(bp.ptype == ProposalType.DECISION) {
-//     //   DecisionProposal memory dp = structDownCast(bp);
-//       dp.choose = "Test";
-//     // } 
-//     // else if(bp.ptype == ProposalType.AUCTION) {
-
-//     // } else if(bp.ptype == ProposalType.ELECTION) {
-
-//     // }
-//   }
-
-  function validateProposal(ICommon.BaseProposal memory bp) internal pure {
-    // require(bp.id > 0, "Invalid ID");
-    // require(bp.voteStartAt > block.timestamp && bp.voteEndAt > block.timestamp, "Illegal Timestamp");
-    // require(bp.voteStartAt < bp.voteEndAt, "Illegal VoteStartAt");
+  function _validateProposal(ICommon.BaseProposal memory bp) internal pure {
     if(bp.ptype == ICommon.ProposalType.DECISION) {
-      ICommon.DecisionProposal memory dp = decisionProposalStrcutDownCastInMemory(bp);      
-      require(bytes(dp.choose).length == bytes("Yes/No Question?").length, "Invalid Choose");
+      ICommon.DecisionProposal memory dp = LCastingStruct.memoryGetDecision(bp);      
+      require(keccak256(abi.encodePacked(dp.choose)) == keccak256(abi.encodePacked("Yes/No Question?")), "Invalid Choose");
 
     } else if(bp.ptype == ICommon.ProposalType.AUCTION) {
-      ICommon.AuctionProposal memory ap = auctionProposalStrcutDownCastInMemory(bp);
-      require(ap.minPrice > 0, "Invalid MinPrice");
-      require(ap.stuffID != bytes32(0), "Invalid Stuff ID");
+      ICommon.AuctionProposal memory ap = LCastingStruct.memoryGetAuction(bp);
+      require(ap.minPrice == 2000, "Invalid MinPrice");
+      require(ap.stuffID == keccak256(abi.encodePacked(uint8(101))), "Invalid Stuff ID");
 
     } else if(bp.ptype == ICommon.ProposalType.ELECTION) {
-      ICommon.ElectionProposal memory ep = electionProposalStrcutDownCastInMemory(bp);
-      require(ep.nominators.length > 0, "Invalid nominators");
-    }
-  }
-
-  function decisionProposalStrcutDownCastInMemory(ICommon.BaseProposal memory bp) internal pure returns (ICommon.DecisionProposal memory dp) {
-
-    if(bp.ptype == ICommon.ProposalType.DECISION) {
-      assembly {
-        // let ptr := mload(0x40)
-        // mstore(add(ptr, 0x00), sub(bp, 0x40))
-        // dp := mload(ptr)
-        dp := sub(bp, 0x40)
-      }
-    } else {
-      revert("Invalid Proposal");
-    }
-  }
-
-  function auctionProposalStrcutDownCastInMemory(ICommon.BaseProposal memory bp) internal pure returns (ICommon.AuctionProposal memory ap) {
-    if(bp.ptype == ICommon.ProposalType.AUCTION) {
-      assembly {
-        // let ptr := mload(0x40)
-        // mstore(add(ptr, 0x00), sub(bp, 0x40))
-        // dp := mload(ptr)
-        ap := sub(bp, 0x40)
-      }
-    } else {
-      revert("Invalid Proposal");
-    }
-  }
-
-  function electionProposalStrcutDownCastInMemory(ICommon.BaseProposal memory bp) internal pure returns (ICommon.ElectionProposal memory ep) {
-    if(bp.ptype == ICommon.ProposalType.ELECTION) {
-      assembly {
-        // let ptr := mload(0x40)
-        // mstore(add(ptr, 0x00), sub(bp, 0x40))
-        // dp := mload(ptr)
-        ep := sub(bp, 0x40)
-      }
-    } else {
-      revert("Invalid Proposal");
+      ICommon.ElectionProposal memory ep = LCastingStruct.memoryGetElection(bp);
+      require(ep.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
     }
   }
 }

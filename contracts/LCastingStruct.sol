@@ -4,12 +4,12 @@ pragma solidity 0.8.19;
 import "./ICommon.sol";
 
 /**
- * @title Cast Storage Library
+ * @title Casting Struct Library
  * @author Sina Tadayon, https://github.com/SinaTadayon
  * @dev
  *
  */
-library LStructCastStorage {
+library LCastingStruct {
   function storageDecision(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
     internal
     view
@@ -22,12 +22,12 @@ library LStructCastStorage {
       dp.slot := keccak256(ptr, 0x40)
     }
     if(atype == ICommon.ActionType.GET) {
-      require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illeagl Proposal");
+      require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illeagl DECISION Proposal");
     } else {
       require(
         dp.baseProposal.ptype == ICommon.ProposalType.NONE || 
         dp.baseProposal.ptype == ICommon.ProposalType.DECISION, 
-        "Illeagl Proposal"
+        "Illeagl DECISION Proposal"
       );      
     }
   }
@@ -44,12 +44,12 @@ library LStructCastStorage {
       ap.slot := keccak256(ptr, 0x40)
     }
     if(atype == ICommon.ActionType.GET) {
-      require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illeagl Proposal");
+      require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illeagl AUCTION Proposal");
     } else {
       require(
         ap.baseProposal.ptype == ICommon.ProposalType.NONE || 
         ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, 
-        "Illeagl Proposal"
+        "Illeagl AUCTION Proposal"
       );      
     }
   }
@@ -66,15 +66,14 @@ library LStructCastStorage {
       ep.slot := keccak256(ptr, 0x40)
     }
     if(atype == ICommon.ActionType.GET) {
-      require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illeagl Proposal");
+      require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illeagl ELECTION Proposal");
     } else {
       require(
         ep.baseProposal.ptype == ICommon.ProposalType.NONE || 
         ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, 
-        "Illeagl Proposal"
+        "Illeagl ELECTION Proposal"
       );      
     }
-    require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illeagl Proposal");
   }
   
   function getDecision(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 index)
@@ -90,7 +89,7 @@ library LStructCastStorage {
       dp.slot := add(arraySlot, mul(index, 6))
     }    
 
-    require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illegal Proposal");
+    require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illegal DECISION Proposal");
   }
 
   function getAuction(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 index)
@@ -106,7 +105,7 @@ library LStructCastStorage {
       ap.slot := add(arraySlot, mul(index, 6))
     }    
 
-    require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illegal Proposal");
+    require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illegal AUCTION Proposal");
   }
 
   function getElection(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 index)
@@ -122,7 +121,7 @@ library LStructCastStorage {
       ep.slot := add(arraySlot, mul(index, 6))
     }    
 
-    require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illegal Proposal");
+    require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illegal ELECTION Proposal");
   }
 
 
@@ -197,6 +196,37 @@ library LStructCastStorage {
       assembly { ep.slot := bp.slot }
       delete ep.baseProposal;
       delete ep.nominators;
+    }
+  }
+
+   function memoryGetDecision(ICommon.BaseProposal memory bp) internal pure returns (ICommon.DecisionProposal memory dp) {
+
+    if(bp.ptype == ICommon.ProposalType.DECISION) {
+      assembly {
+        dp := sub(bp, 0x40)
+      }
+    } else {
+      revert("Invalid DECISION Proposal");
+    }
+  }
+
+  function memoryGetAuction(ICommon.BaseProposal memory bp) internal pure returns (ICommon.AuctionProposal memory ap) {
+    if(bp.ptype == ICommon.ProposalType.AUCTION) {
+      assembly {      
+        ap := sub(bp, 0x60)
+      }
+    } else {
+      revert("Invalid AUCTION Proposal");
+    }
+  }
+
+  function memoryGetElection(ICommon.BaseProposal memory bp) internal pure returns (ICommon.ElectionProposal memory ep) {
+    if(bp.ptype == ICommon.ProposalType.ELECTION) {
+      assembly {
+        ep := sub(bp, 0x40)
+      }
+    } else {
+      revert("Invalid ELECTION Proposal");
     }
   }
 
