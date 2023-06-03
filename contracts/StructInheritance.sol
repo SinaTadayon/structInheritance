@@ -6,11 +6,23 @@ import "./ICommon.sol";
 import "./LCastingStruct.sol";
 
 /**
- * 
+ * @title the structure inheritance over composition sample
+ * @author Sina Tadayon, https://github.com/SinaTadayon
+ * @dev it contains functions to test downcasting base structure 
+ * to derived structure in mapping, dynamic array storages, and memory area.
+ *
  */
-contract StrucInheritance {  
+contract StructInheritance {  
   using LCastingStruct for *;
 
+  /*
+   * storage slot position of variables as follow: 
+   * proposalMaps is 0
+   * dynamicArrayProposals is 1
+   * auctionProposal is 2
+   * electionProposal is 8
+   * decisionProposal is 15
+   */
   mapping(bytes32 => ICommon.BaseProposal) internal proposalMaps;
   ICommon.BaseProposal[] internal dynamicArrayProposals;
 
@@ -18,6 +30,9 @@ contract StrucInheritance {
   ICommon.ElectionProposal internal  electionProposal;
   ICommon.DecisionProposal internal  decisionProposal;
   
+  /**
+   * @dev initialize auctionProposal, electionProposal, and decisionProposal variables
+   */
   constructor() {
 
     address[] memory candidators = new address[](2);
@@ -58,6 +73,10 @@ contract StrucInheritance {
     });          
   }
 
+  /**
+   * @dev mappingTest() tests upcasting base structure (BaseProposal) from derived structures (DecisionProposal, etc) and 
+   * downcasting base structure to derived structures as well.
+   */
   function mappingTest() public {
      // Decision Proposal
     ICommon.DecisionProposal storage decision = proposalMaps.storageDecision(keccak256(abi.encodePacked(uint(10))), ICommon.ActionType.SET);
@@ -94,11 +113,13 @@ contract StrucInheritance {
     election.nominators = electionProposal.nominators;
 
     // Get ID 10
+    ICommon.BaseProposal storage baseProposal = proposalMaps[keccak256(abi.encodePacked(uint(10)))];
+    require(baseProposal.id == 10, "Invalid Id");
+    require(baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
+    require(baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
+    require(baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");   
+
     ICommon.DecisionProposal storage decisionTemp = proposalMaps.storageDecision(keccak256(abi.encodePacked(uint(10))), ICommon.ActionType.GET);
-    require(decisionTemp.baseProposal.id == 10, "Invalid Id");
-    require(decisionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
-    require(decisionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
-    require(decisionTemp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");   
     require(keccak256(abi.encodePacked(decisionTemp.choose)) == keccak256(abi.encodePacked("Choose One?")), "Invalid Choose");
 
     // Get ID 11
@@ -122,6 +143,14 @@ contract StrucInheritance {
     require(electionTemp.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
   }
   
+   /**
+   * @dev dynamicArrayTest() tests upcasting base structure (BaseProposal)
+   * from derived structures (DecisionProposal, etc) and downcasting base structure to derived structures as well.
+   * it also uses pushXXX, popItem, and getXXX functions which defined in the library for each derived structure.
+   *
+   * Note: Don't use the default push, pop functions, and [] operator of the dynamic array, 
+   * because they couldn't manage storage slots of the derived structure behind of downcasting action properly.
+   */
   function dynamicArrayTest() public {   
     // Push Auction Proposal
     ICommon.AuctionProposal storage auction = dynamicArrayProposals.pushAuction();
@@ -225,6 +254,10 @@ contract StrucInheritance {
     require(dynamicArrayProposals.length == 0, "Invalid Length");
   }
 
+  /**
+   * @dev memoryTest() tests upcasting base structure (BaseProposal) from derived structures (DecisionProposal, etc) and 
+   * downcasting base structure to derived structures in the memory area as well.
+   */
   function memoryTest() public view {
     ICommon.DecisionProposal memory dp = decisionProposal;
     ICommon.AuctionProposal memory ap = auctionProposal;    

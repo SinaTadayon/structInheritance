@@ -15,6 +15,9 @@ contract ICommon {
     GET
   }
 
+  /*
+   * Base Struct
+   */
   struct BaseProposal {
     uint256 id;   
     uint128 voteStartAt;
@@ -22,6 +25,9 @@ contract ICommon {
     ProposalType ptype;
   }
 
+  /*
+   * Derived Structs
+   */
   struct DecisionProposal {
     BaseProposal baseProposal;
     string choose;
