@@ -5,6 +5,9 @@ pragma solidity 0.8.19;
 import "./ICommon.sol";
 import "./LCastingStruct.sol";
 
+/**
+ * 
+ */
 contract StrucInheritance {  
   using LCastingStruct for *;
 
@@ -48,6 +51,9 @@ contract StrucInheritance {
         voteEndAt: uint128(block.timestamp) + 100000,
         ptype: ICommon.ProposalType.ELECTION
       }),
+      minNominator: 1,
+      maxNominator: 7,
+      quorumVotes: 750,
       nominators: candidators
     });          
   }
@@ -82,6 +88,9 @@ contract StrucInheritance {
       voteEndAt: uint128(block.timestamp) + 4000,
       ptype: ICommon.ProposalType.ELECTION
     });
+    election.minNominator = 3;
+    election.maxNominator = 10;
+    election.quorumVotes = 1000;
     election.nominators = electionProposal.nominators;
 
     // Get ID 10
@@ -107,6 +116,9 @@ contract StrucInheritance {
     require(electionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 400, "Invalid Start");
     require(electionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 4000, "Invalid End");
     require(electionTemp.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Invalid Type");
+    require(electionTemp.minNominator == 3, "Invalid minNominator");
+    require(electionTemp.maxNominator == 10, "Invalid maxNominator");
+    require(electionTemp.quorumVotes == 1000, "Invalid quorumVotes");
     require(electionTemp.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
   }
   
@@ -114,7 +126,7 @@ contract StrucInheritance {
     // Push Auction Proposal
     ICommon.AuctionProposal storage auction = dynamicArrayProposals.pushAuction();
     auction.baseProposal = ICommon.BaseProposal({
-      id: 11,
+      id: 21,
       voteStartAt: uint128(block.timestamp) + 300,
       voteEndAt: uint128(block.timestamp) + 3000,
       ptype: ICommon.ProposalType.AUCTION
@@ -125,7 +137,7 @@ contract StrucInheritance {
     // Push Decision Proposal
     ICommon.DecisionProposal storage decision = dynamicArrayProposals.pushDecision();
     decision.baseProposal = ICommon.BaseProposal({
-      id: 10,
+      id: 22,
       voteStartAt: uint128(block.timestamp) + 200,
       voteEndAt: uint128(block.timestamp) + 2000,
       ptype: ICommon.ProposalType.DECISION
@@ -135,17 +147,20 @@ contract StrucInheritance {
     // Push Election Proposal
     ICommon.ElectionProposal storage election = dynamicArrayProposals.pushElection();    
     election.baseProposal = ICommon.BaseProposal({
-      id: 12,
+      id: 23,
       voteStartAt: uint128(block.timestamp) + 400,
       voteEndAt: uint128(block.timestamp) + 4000,
       ptype: ICommon.ProposalType.ELECTION
     });
+    election.minNominator = 5;
+    election.maxNominator = 15;
+    election.quorumVotes = 900;
     election.nominators = electionProposal.nominators;
 
 
     // Get Auction
     ICommon.AuctionProposal storage auctionTemp = dynamicArrayProposals.getAuction(0);
-    require(auctionTemp.baseProposal.id == 11, "Invalid Id");
+    require(auctionTemp.baseProposal.id == 21, "Invalid Id");
     require(auctionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
     require(auctionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
     require(auctionTemp.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
@@ -154,7 +169,7 @@ contract StrucInheritance {
 
     // Get Decision
     ICommon.DecisionProposal storage decisionTemp = dynamicArrayProposals.getDecision(1);
-    require(decisionTemp.baseProposal.id == 10, "Invalid Id");
+    require(decisionTemp.baseProposal.id == 22, "Invalid Id");
     require(decisionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
     require(decisionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
     require(decisionTemp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");   
@@ -162,10 +177,13 @@ contract StrucInheritance {
     
     // Get Election 
     ICommon.ElectionProposal storage electionTemp = dynamicArrayProposals.getElection(2);
-    require(electionTemp.baseProposal.id == 12, "Invalid Id");
+    require(electionTemp.baseProposal.id == 23, "Invalid Id");
     require(electionTemp.baseProposal.voteStartAt == uint128(block.timestamp) + 400, "Invalid Start");
     require(electionTemp.baseProposal.voteEndAt == uint128(block.timestamp) + 4000, "Invalid End");
     require(electionTemp.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Invalid Type");
+    require(electionTemp.minNominator == 5, "Invalid minNominator");
+    require(electionTemp.maxNominator == 15, "Invalid maxNominator");
+    require(electionTemp.quorumVotes == 900, "Invalid quorumVotes");
     require(electionTemp.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
 
     // Pop Item
@@ -174,7 +192,7 @@ contract StrucInheritance {
 
      // Test Auction
     ICommon.AuctionProposal storage popAuction = dynamicArrayProposals.getAuction(0);
-    require(popAuction.baseProposal.id == 11, "Invalid Id");
+    require(popAuction.baseProposal.id == 21, "Invalid Id");
     require(popAuction.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
     require(popAuction.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
     require(popAuction.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
@@ -183,7 +201,7 @@ contract StrucInheritance {
 
     // Test Decision
     ICommon.DecisionProposal storage popDecision = dynamicArrayProposals.getDecision(1);
-    require(popDecision.baseProposal.id == 10, "Invalid Id");
+    require(popDecision.baseProposal.id == 22, "Invalid Id");
     require(popDecision.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
     require(popDecision.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
     require(popDecision.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");    
@@ -195,21 +213,12 @@ contract StrucInheritance {
     require(dynamicArrayProposals.length == 1, "Invalid Length");
 
     popAuction = dynamicArrayProposals.getAuction(0);
-    require(popAuction.baseProposal.id == 11, "Invalid Id");
+    require(popAuction.baseProposal.id == 21, "Invalid Id");
     require(popAuction.baseProposal.voteStartAt == uint128(block.timestamp) + 300, "Invalid Start");
     require(popAuction.baseProposal.voteEndAt == uint128(block.timestamp) + 3000, "Invalid End");
     require(popAuction.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Invalid Type");
     require(popAuction.minPrice == 1000, "Invalid Price");
     require(popAuction.stuffID == keccak256(abi.encodePacked(uint8(200))), "Invalid SuffID");
-
-
-    // // Test Decision
-    // popDecision = dynamicArrayProposals.getDecision(0);
-    // require(popDecision.baseProposal.id == 10, "Invalid Id");
-    // require(popDecision.baseProposal.voteStartAt == uint128(block.timestamp) + 200, "Invalid Start");
-    // require(popDecision.baseProposal.voteEndAt == uint128(block.timestamp) + 2000, "Invalid End");
-    // require(popDecision.baseProposal.ptype == ICommon.ProposalType.DECISION, "Invalid Type");    
-    // require(keccak256(abi.encodePacked(popDecision.choose)) == keccak256(abi.encodePacked("Choose One?")), "Invalid Choose");
 
     // Pop Item
     dynamicArrayProposals.popItem();
@@ -238,6 +247,9 @@ contract StrucInheritance {
 
     } else if(bp.ptype == ICommon.ProposalType.ELECTION) {
       ICommon.ElectionProposal memory ep = LCastingStruct.memoryGetElection(bp);
+      require(ep.minNominator == 1, "Invalid minNominator");
+      require(ep.maxNominator == 7, "Invalid maxNominator");
+      require(ep.quorumVotes == 750, "Invalid quorumVotes");
       require(ep.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
     }
   }

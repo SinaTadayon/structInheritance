@@ -16,7 +16,7 @@ contract ICommon {
   }
 
   struct BaseProposal {
-    uint256  id;   
+    uint256 id;   
     uint128 voteStartAt;
     uint128 voteEndAt;
     ProposalType ptype;
@@ -35,6 +35,9 @@ contract ICommon {
 
   struct ElectionProposal {
     BaseProposal baseProposal;
+    uint32 minNominator;
+    uint32 maxNominator;
+    uint256 quorumVotes;
     address[] nominators;
   }
 }
