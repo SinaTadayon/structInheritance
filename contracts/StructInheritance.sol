@@ -259,7 +259,7 @@ contract StructInheritance {
    * @dev memoryTest() tests upcasting base structure (BaseProposal) from derived structures (DecisionProposal, etc) and 
    * downcasting base structure to derived structures in the memory area as well.
    */
-  function memoryFunctionTest() public view {
+  function inlineFunctionTest() public view {
     ICommon.DecisionProposal memory dp = decisionProposal;
     ICommon.AuctionProposal memory ap = auctionProposal;    
     ICommon.ElectionProposal memory ep = electionProposal;
