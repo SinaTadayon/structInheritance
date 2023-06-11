@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-
-pragma solidity 0.8.19;
+pragma solidity >= 0.7.0 < 0.9.0;
 
 import "./ICommon.sol";
 import "./LCastingStruct.sol";
@@ -153,39 +152,41 @@ contract StructInheritance {
    */
   function dynamicArrayTest() public {   
     // Push Auction Proposal
-    ICommon.AuctionProposal storage auction = dynamicArrayProposals.pushAuction();
-    auction.baseProposal = ICommon.BaseProposal({
-      id: 21,
-      voteStartAt: uint128(block.timestamp) + 300,
-      voteEndAt: uint128(block.timestamp) + 3000,
-      ptype: ICommon.ProposalType.AUCTION
-    });
-    auction.minPrice = 1000;
-    auction.stuffID = keccak256(abi.encodePacked(uint8(200)));
+    dynamicArrayProposals.pushAuction(ICommon.AuctionProposal({
+      baseProposal: ICommon.BaseProposal({
+        id: 21,
+        voteStartAt: uint128(block.timestamp) + 300,
+        voteEndAt: uint128(block.timestamp) + 3000,
+        ptype: ICommon.ProposalType.AUCTION
+      }),
+      minPrice: 1000,
+      stuffID: keccak256(abi.encodePacked(uint8(200)))
+    }));
 
     // Push Decision Proposal
-    ICommon.DecisionProposal storage decision = dynamicArrayProposals.pushDecision();
-    decision.baseProposal = ICommon.BaseProposal({
-      id: 22,
-      voteStartAt: uint128(block.timestamp) + 200,
-      voteEndAt: uint128(block.timestamp) + 2000,
-      ptype: ICommon.ProposalType.DECISION
-    });
-    decision.choose = "Choose One?";
+    dynamicArrayProposals.pushDecision(ICommon.DecisionProposal({
+      baseProposal: ICommon.BaseProposal({
+        id: 22,
+        voteStartAt: uint128(block.timestamp) + 200,
+        voteEndAt: uint128(block.timestamp) + 2000,
+        ptype: ICommon.ProposalType.DECISION
+      }),
+      choose: "Choose One?"
+    }));
 
     // Push Election Proposal
-    ICommon.ElectionProposal storage election = dynamicArrayProposals.pushElection();    
-    election.baseProposal = ICommon.BaseProposal({
-      id: 23,
-      voteStartAt: uint128(block.timestamp) + 400,
-      voteEndAt: uint128(block.timestamp) + 4000,
-      ptype: ICommon.ProposalType.ELECTION
-    });
-    election.minNominator = 5;
-    election.maxNominator = 15;
-    election.quorumVotes = 900;
-    election.nominators = electionProposal.nominators;
-
+    dynamicArrayProposals.pushElection(ICommon.ElectionProposal({
+      baseProposal: ICommon.BaseProposal({
+        id: 23,
+        voteStartAt: uint128(block.timestamp) + 400,
+        voteEndAt: uint128(block.timestamp) + 4000,
+        ptype: ICommon.ProposalType.ELECTION
+      }),
+      minNominator: 5,
+      maxNominator: 15,
+      quorumVotes: 900,
+      nominators: electionProposal.nominators
+    }));    
 
     // Get Auction
     ICommon.AuctionProposal storage auctionTemp = dynamicArrayProposals.getAuction(0);
@@ -258,10 +259,21 @@ contract StructInheritance {
    * @dev memoryTest() tests upcasting base structure (BaseProposal) from derived structures (DecisionProposal, etc) and 
    * downcasting base structure to derived structures in the memory area as well.
    */
-  function memoryTest() public view {
+  function memoryFunctionTest() public view {
     ICommon.DecisionProposal memory dp = decisionProposal;
     ICommon.AuctionProposal memory ap = auctionProposal;    
     ICommon.ElectionProposal memory ep = electionProposal;
+
+    // ICommon.AuctionProposal memory ap = ICommon.AuctionProposal({
+    //   baseProposal: ICommon.BaseProposal({
+    //     id: 10,
+    //     voteStartAt: 11,
+    //     voteEndAt: 12,
+    //     ptype: ICommon.ProposalType.AUCTION
+    //   }),
+    //   minPrice: 1000,
+    //   stuffID: keccak256(abi.encodePacked(uint8(200)))
+    // });
 
     _validateProposal(dp.baseProposal);
     _validateProposal(ap.baseProposal);

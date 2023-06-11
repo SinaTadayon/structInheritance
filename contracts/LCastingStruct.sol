@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity >= 0.7.0 < 0.9.0;
 
 import "./ICommon.sol";
 
@@ -45,12 +45,12 @@ library LCastingStruct {
       dp.slot := keccak256(ptr, 0x40)
     }
     if(atype == ICommon.ActionType.GET) {
-      require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illeagl DECISION Proposal");
+      require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illegal DECISION Proposal");
     } else {
       require(
         dp.baseProposal.ptype == ICommon.ProposalType.NONE || 
         dp.baseProposal.ptype == ICommon.ProposalType.DECISION, 
-        "Illeagl DECISION Proposal"
+        "Illegal DECISION Proposal"
       );      
     }
   }
@@ -71,12 +71,12 @@ library LCastingStruct {
       ap.slot := keccak256(ptr, 0x40)
     }
     if(atype == ICommon.ActionType.GET) {
-      require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illeagl AUCTION Proposal");
+      require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illegal AUCTION Proposal");
     } else {
       require(
         ap.baseProposal.ptype == ICommon.ProposalType.NONE || 
         ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, 
-        "Illeagl AUCTION Proposal"
+        "Illegal AUCTION Proposal"
       );      
     }
   }
@@ -97,12 +97,12 @@ library LCastingStruct {
       ep.slot := keccak256(ptr, 0x40)
     }
     if(atype == ICommon.ActionType.GET) {
-      require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illeagl ELECTION Proposal");
+      require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illegal ELECTION Proposal");
     } else {
       require(
         ep.baseProposal.ptype == ICommon.ProposalType.NONE || 
         ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, 
-        "Illeagl ELECTION Proposal"
+        "Illegal ELECTION Proposal"
       );      
     }
   }
@@ -178,7 +178,7 @@ library LCastingStruct {
    * finally the found slot is set to a slot of target structure (DecisionProposal) 
    * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal). 
    */
-  function pushDecision(ICommon.BaseProposal[] storage dynamicArrayProposals)
+  function pushDecision(ICommon.BaseProposal[] storage dynamicArrayProposals, ICommon.DecisionProposal memory decisionProposal)
     internal    
     returns (ICommon.DecisionProposal storage dp)
   {    
@@ -189,13 +189,15 @@ library LCastingStruct {
       sstore(dynamicArrayProposals.slot, add(lastIndex, 0x01))
       dp.slot := add(keccak256(ptr, 0x20), mul(lastIndex, 7))
     }
+    dp.baseProposal = decisionProposal.baseProposal;
+    dp.choose = decisionProposal.choose;
   }
 
   /**
    * @dev it's the same as the pushDecision function with differences in target downcasting structure.
    * The AuctionProposal only will occupy 6 slots. 
    */
-  function pushAuction(ICommon.BaseProposal[] storage dynamicArrayProposals)
+  function pushAuction(ICommon.BaseProposal[] storage dynamicArrayProposals, ICommon.AuctionProposal memory auctionProposal)
     internal    
     returns (ICommon.AuctionProposal storage ap)
   {    
@@ -206,12 +208,15 @@ library LCastingStruct {
       sstore(dynamicArrayProposals.slot, add(lastIndex, 0x01))
       ap.slot := add(keccak256(ptr, 0x20), mul(lastIndex, 7))
     }
+    ap.baseProposal = auctionProposal.baseProposal;
+    ap.minPrice = auctionProposal.minPrice;
+    ap.stuffID = auctionProposal.stuffID;
   }
 
   /**
    * @dev it's the same as the pushDecision function with differences in target downcasting structure.
    */
-  function pushElection(ICommon.BaseProposal[] storage dynamicArrayProposals)
+  function pushElection(ICommon.BaseProposal[] storage dynamicArrayProposals, ICommon.ElectionProposal memory electionProposal)
     internal    
     returns (ICommon.ElectionProposal storage ep)
   {    
@@ -222,6 +227,11 @@ library LCastingStruct {
       sstore(dynamicArrayProposals.slot, add(lastIndex, 0x01))
       ep.slot := add(keccak256(ptr, 0x20), mul(lastIndex, 7))
     }
+    ep.baseProposal = electionProposal.baseProposal;
+    ep.minNominator = electionProposal.minNominator;
+    ep.maxNominator = electionProposal.maxNominator;
+    ep.quorumVotes = electionProposal.quorumVotes;
+    ep.nominators = electionProposal.nominators; 
   }
 
   /** 
@@ -234,8 +244,11 @@ library LCastingStruct {
    * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal), 
    * finally delete elemnets of derived structure according to specific the ProposalType.  
    */
-  function popItem(ICommon.BaseProposal[] storage dynamicArrayProposals) internal {
-    ICommon.BaseProposal storage bp;
+  function popItem(ICommon.BaseProposal[] storage dynamicArrayProposals) 
+    internal 
+    returns (ICommon.BaseProposal storage bp)
+  { 
+    require(dynamicArrayProposals.length > 0, "Invalid Pop");
     assembly {
       let ptr := mload(0x40)
       mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
@@ -269,16 +282,16 @@ library LCastingStruct {
   }
 
   /** 
-   * @dev in memory downcasting of base structure to derived structure  
-   * it finds a memory address pointer of the derived structure according to the
+   * @dev for memory downcasting of base structure to derived structure,  
+   * it should find a memory address pointer of the derived structure according to the
    *
-   *    (base struct address pointer - (0x20 * element counts of derived structure)) formula,
+   *    (base struct address pointer - (0x20 * member counts of derived struct)) formula,
    *
    * in this case, the difference between the BaseProposal and DecisionProposal address pointers is 2 * 0x20,
    * then the found address is set to a pointer of target derived structure (DecisionProposal)
    * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal).
    *
-   * Note: the mentioned formula is only true when the base structure is the first element defined in the derived structure.
+   * Note: the mentioned formula is only true when the base structure is the first member defined in the derived structure.
    */
   function memoryGetDecision(ICommon.BaseProposal memory bp) internal pure returns (ICommon.DecisionProposal memory dp) {
 
@@ -293,7 +306,7 @@ library LCastingStruct {
 
   /**
    * @dev it's the same as the memoryGetDecision function with differences in calculating the downcasting structure formula.
-   * Note: element counts of AuctionProposal structure is 3
+   * Note: member counts of AuctionProposal structure is 3
    */
   function memoryGetAuction(ICommon.BaseProposal memory bp) internal pure returns (ICommon.AuctionProposal memory ap) {
     if(bp.ptype == ICommon.ProposalType.AUCTION) {
@@ -307,7 +320,7 @@ library LCastingStruct {
 
   /**
    * @dev it's the same as the memoryGetDecision function with differences in calculating the downcasting structure formula.
-   * Note: element counts of ElectionProposal structure is 4
+   * Note: member counts of ElectionProposal structure is 4
    */
   function memoryGetElection(ICommon.BaseProposal memory bp) internal pure returns (ICommon.ElectionProposal memory ep) {
     if(bp.ptype == ICommon.ProposalType.ELECTION) {
@@ -318,5 +331,4 @@ library LCastingStruct {
       revert("Invalid ELECTION Proposal");
     }
   }
-
 }
