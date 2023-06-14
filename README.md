@@ -6,7 +6,6 @@ series ^0.7.0 and ^0.8.0.
 
 
 ## Installation
-
 1. Clone this repository:
 ```console
 git clone https://github.com/SinaTadayon/structureInheritance.git 

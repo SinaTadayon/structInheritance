@@ -15,7 +15,7 @@ library LCastingStruct {
    * @dev it finds a storage slot of a derived structure (DecisionProposal) in a mapping data structure 
    * by a key (ProposalId) according to the keccak256(h(k) . p) formula,    
    * then the found slot is set to a slot of target structure (DecisionProposal) 
-   * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal), 
+   * which means down-casting a base struct (BaseProposal) to a derived structure (DecisionProposal),
    * and finally validates it by considering the SET/GET action.
    *
    * The Get action checks only the ProposalType of the found Decision structure 
@@ -116,15 +116,15 @@ library LCastingStruct {
    * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal), 
    * and finally validates it by the ProposalType.
    */
-  function getDecision(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 idx)
+  function getDecision(ICommon.BaseProposal[] storage proposalsExtArray, uint256 idx)
     internal
     view
     returns (ICommon.DecisionProposal storage dp)
   {
-    require(idx < dynamicArrayProposals.length, "Invalid Index");
+    require(idx < proposalsExtArray.length, "Invalid Index");
     assembly {
       let ptr := mload(0x40)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
       dp.slot := add(keccak256(ptr, 0x20), mul(idx, 7))
     }    
 
@@ -135,15 +135,15 @@ library LCastingStruct {
    * @dev it's the same as the getDecision function with differences in target downcasting structure 
    * and related the ProposalType validation. the AuctionProposal only will occupy 6 slots. 
    */
-  function getAuction(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 idx)
+  function getAuction(ICommon.BaseProposal[] storage proposalsExtArray, uint256 idx)
     internal
     view
     returns (ICommon.AuctionProposal storage ap)
   {
-    require(idx < dynamicArrayProposals.length, "Invalid Index");
+    require(idx < proposalsExtArray.length, "Invalid Index");
     assembly {
       let ptr := mload(0x40)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
       ap.slot := add(keccak256(ptr, 0x20), mul(idx, 7))
     }    
 
@@ -154,15 +154,15 @@ library LCastingStruct {
    * @dev it's the same as the getDecision function with differences in target downcasting structure 
    * and related the ProposalType validation
    */
-  function getElection(ICommon.BaseProposal[] storage dynamicArrayProposals, uint256 idx)
+  function getElection(ICommon.BaseProposal[] storage proposalsExtArray, uint256 idx)
     internal
     view
     returns (ICommon.ElectionProposal storage ep)
   {
-    require(idx < dynamicArrayProposals.length, "Invalid Index");
+    require(idx < proposalsExtArray.length, "Invalid Index");
     assembly {
       let ptr := mload(0x40)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
       ep.slot := add(keccak256(ptr, 0x20), mul(idx, 7))
     }    
 
@@ -178,15 +178,15 @@ library LCastingStruct {
    * finally the found slot is set to a slot of target structure (DecisionProposal) 
    * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal). 
    */
-  function pushDecision(ICommon.BaseProposal[] storage dynamicArrayProposals, ICommon.DecisionProposal memory decisionProposal)
+  function pushDecision(ICommon.BaseProposal[] storage proposalsExtArray, ICommon.DecisionProposal memory decisionProposal)
     internal    
     returns (ICommon.DecisionProposal storage dp)
   {    
     assembly {
       let ptr := mload(0x40)
-      let lastIndex := sload(dynamicArrayProposals.slot)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
-      sstore(dynamicArrayProposals.slot, add(lastIndex, 0x01))
+      let lastIndex := sload(proposalsExtArray.slot)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
+      sstore(proposalsExtArray.slot, add(lastIndex, 0x01))
       dp.slot := add(keccak256(ptr, 0x20), mul(lastIndex, 7))
     }
     dp.baseProposal = decisionProposal.baseProposal;
@@ -197,15 +197,15 @@ library LCastingStruct {
    * @dev it's the same as the pushDecision function with differences in target downcasting structure.
    * The AuctionProposal only will occupy 6 slots. 
    */
-  function pushAuction(ICommon.BaseProposal[] storage dynamicArrayProposals, ICommon.AuctionProposal memory auctionProposal)
+  function pushAuction(ICommon.BaseProposal[] storage proposalsExtArray, ICommon.AuctionProposal memory auctionProposal)
     internal    
     returns (ICommon.AuctionProposal storage ap)
   {    
     assembly {
       let ptr := mload(0x40)
-      let lastIndex := sload(dynamicArrayProposals.slot)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
-      sstore(dynamicArrayProposals.slot, add(lastIndex, 0x01))
+      let lastIndex := sload(proposalsExtArray.slot)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
+      sstore(proposalsExtArray.slot, add(lastIndex, 0x01))
       ap.slot := add(keccak256(ptr, 0x20), mul(lastIndex, 7))
     }
     ap.baseProposal = auctionProposal.baseProposal;
@@ -216,15 +216,15 @@ library LCastingStruct {
   /**
    * @dev it's the same as the pushDecision function with differences in target downcasting structure.
    */
-  function pushElection(ICommon.BaseProposal[] storage dynamicArrayProposals, ICommon.ElectionProposal memory electionProposal)
+  function pushElection(ICommon.BaseProposal[] storage proposalsExtArray, ICommon.ElectionProposal memory electionProposal)
     internal    
     returns (ICommon.ElectionProposal storage ep)
   {    
     assembly {
       let ptr := mload(0x40)
-      let lastIndex := sload(dynamicArrayProposals.slot)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
-      sstore(dynamicArrayProposals.slot, add(lastIndex, 0x01))
+      let lastIndex := sload(proposalsExtArray.slot)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
+      sstore(proposalsExtArray.slot, add(lastIndex, 0x01))
       ep.slot := add(keccak256(ptr, 0x20), mul(lastIndex, 7))
     }
     ep.baseProposal = electionProposal.baseProposal;
@@ -237,23 +237,21 @@ library LCastingStruct {
   /** 
    * @dev pop last item from the Proposals dynamic array. 
    * it finds a storage slot of a one of the derived structure in a dynamic array data structure
-   * by the last index of the array according to the (keccak256(p) + (index * the biggest size of derived structure)) formula,
+   * by the last index of the array according to the (keccak256(p) + (index * the biggest of derived struct size)) formula,
    * in this case, the biggest size of the derived structure among all derived structures is ElectionProposal 
    * which will occupy 7 slots at least.
    * then the found slot is set to a slot of has gotten the last derived structure 
    * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal), 
    * finally delete elemnets of derived structure according to specific the ProposalType.  
    */
-  function popItem(ICommon.BaseProposal[] storage dynamicArrayProposals) 
-    internal 
-    returns (ICommon.BaseProposal storage bp)
-  { 
-    require(dynamicArrayProposals.length > 0, "Invalid Pop");
+  function popItem(ICommon.BaseProposal[] storage proposalsExtArray) internal { 
+    require(proposalsExtArray.length > 0, "Invalid Pop");
+    ICommon.BaseProposal storage bp;
     assembly {
       let ptr := mload(0x40)
-      mstore(add(ptr, 0x00), dynamicArrayProposals.slot)
-      let length := sub(sload(dynamicArrayProposals.slot), 0x01)      
-      sstore(dynamicArrayProposals.slot, length)
+      mstore(add(ptr, 0x00), proposalsExtArray.slot)
+      let length := sub(sload(proposalsExtArray.slot), 0x01)      
+      sstore(proposalsExtArray.slot, length)
       bp.slot := add(keccak256(ptr, 0x20), mul(length, 7))
     }
 

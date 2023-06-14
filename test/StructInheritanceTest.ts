@@ -21,21 +21,21 @@ describe('Structure Inheritance Tests', function() {
     expect(structInheritance.address).to.be.not.empty
   })
 
-  it("Should calling mappingTest() success", async () => {
+  it("Should calling extendedMappingTest() success", async () => {
       // when and then
       // all tests should be passed in the contract function itself
-      await structInheritance.connect(admin).mappingTest()
+      await structInheritance.connect(admin).extendedMappingTest()
   })
 
-  it("Should calling dynamicArrayTest() success", async () => {
+  it("Should calling extendedArrayTest() success", async () => {
     // when and then
     // all tests should be passed in the contract function itself
-    await structInheritance.connect(admin).dynamicArrayTest()
+    await structInheritance.connect(admin).extendedArrayTest()
   })
 
-  it("Should calling inlineFunctionTest() success", async () => {
+  it("Should calling extendedFunctionTest() success", async () => {
     // when and then
     // all tests should be passed in the contract function itself
-    await structInheritance.connect(admin).inlineFunctionTest()
+    await structInheritance.connect(admin).extendedFunctionTest()
   })
 })
