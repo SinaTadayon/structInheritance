@@ -6,32 +6,19 @@ import "./ICommon.sol";
 /**
  * @title Casting Struct Library
  * @author Sina Tadayon, https://github.com/SinaTadayon
- * @dev Collection functions to manage storage slots and memory pointers of structure types 
- * for mapping, dynamic array, and memory casting in conjunction with structure inheritance over composition
+ * @dev These collection functions are designed to manage storage slots and memory pointers of struct types for mapping, 
+ * dynamic array, and memory casting. They work in conjunction with struct inheritance over composition.
  *
  */
 library LCastingStruct {
   /**
-   * @dev it finds a storage slot of a derived structure (DecisionProposal) in a mapping data structure 
-   * by a key (ProposalId) according to the keccak256(h(k) . p) formula,    
-   * then the found slot is set to a slot of target structure (DecisionProposal) 
-   * which means down-casting a base struct (BaseProposal) to a derived structure (DecisionProposal),
-   * and finally validates it by considering the SET/GET action.
-   *
-   * The Get action checks only the ProposalType of the found Decision structure 
-   * which is compatible with the found struct itself.
-   *
-   * The Set action checks two conditions at the same time, the first one is 
-   *
-   *    dp.baseProposal.ptype == ICommon.ProposalType.NONE 
-   *
-   * for checking empty slots if any Decision structure hasn't already existed 
-   *
-   * The second one is 
-   *
-   *    dp.baseProposal.ptype == ICommon.ProposalType.DECISION 
-   *
-   * for checking the slots that have had the Decision structure that wants to update it.
+   * @dev Find the storage slot of a derived structure (DecisionProposal) in a mapping data struct using a 
+   * key (ProposalId) and the keccak256(h(k) . p) formula. Then, set the found slot as the slot of the 
+   * target struct (DecisionProposal), which involves downcasting the base struct (BaseProposal) to 
+   * a derived struct (DecisionProposal). Finally, validate it based on the SET/GET action.
+   * 
+   * The GET action checks the ProposalType of the found Decision structure to ensure compatibility with the found struct itself.
+   * The SET action checks checks for empty slots where no Decision structure has already existed.
    */
   function storageDecision(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
     internal
@@ -47,16 +34,12 @@ library LCastingStruct {
     if(atype == ICommon.ActionType.GET) {
       require(dp.baseProposal.ptype == ICommon.ProposalType.DECISION, "Illegal DECISION Proposal");
     } else {
-      require(
-        dp.baseProposal.ptype == ICommon.ProposalType.NONE || 
-        dp.baseProposal.ptype == ICommon.ProposalType.DECISION, 
-        "Illegal DECISION Proposal"
-      );      
+      require( dp.baseProposal.ptype == ICommon.ProposalType.NONE, "Illegal DECISION Proposal");      
     }
   }
 
   /**
-   * @dev it's the same as the storageDecision function with differences in target downcasting structure 
+   * @dev it's the same as the storageDecision function with differences in target down-casting struct
    * and related the ProposalType validation
    */
   function storageAuction(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
@@ -73,16 +56,12 @@ library LCastingStruct {
     if(atype == ICommon.ActionType.GET) {
       require(ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, "Illegal AUCTION Proposal");
     } else {
-      require(
-        ap.baseProposal.ptype == ICommon.ProposalType.NONE || 
-        ap.baseProposal.ptype == ICommon.ProposalType.AUCTION, 
-        "Illegal AUCTION Proposal"
-      );      
+      require(ap.baseProposal.ptype == ICommon.ProposalType.NONE, "Illegal AUCTION Proposal");      
     }
   }
 
   /**
-   * @dev it's the same as the storageDecision function with differences in target downcasting structure 
+   * @dev it's the same as the storageDecision function with differences in target down-casting struct 
    * and related the ProposalType validation
    */
   function storageElection(mapping(bytes32 => ICommon.BaseProposal) storage proposalMaps, bytes32 proposalId, ICommon.ActionType atype)
@@ -99,22 +78,17 @@ library LCastingStruct {
     if(atype == ICommon.ActionType.GET) {
       require(ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, "Illegal ELECTION Proposal");
     } else {
-      require(
-        ep.baseProposal.ptype == ICommon.ProposalType.NONE || 
-        ep.baseProposal.ptype == ICommon.ProposalType.ELECTION, 
-        "Illegal ELECTION Proposal"
-      );      
+      require(ep.baseProposal.ptype == ICommon.ProposalType.NONE, "Illegal ELECTION Proposal");      
     }
   }
   
   /**
-   * @dev it finds a storage slot of a derived structure (DecisionProposal) in a dynamic array data structure
-   * by an index of array (idx) according to the (keccak256(p) + (index * the biggest size of derived structure)) formula,
-   * in this case, the biggest size of the derived structure among all derived structures is ElectionProposal 
-   * which will occupy 7 slots at least, meanwhile the DecisionProposal will occupy 5 slots at least.
-   * then the found slot is set to a slot of target structure (DecisionProposal) 
-   * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal), 
-   * and finally validates it by the ProposalType.
+   * @dev Find the storage slot of a derived struct (DecisionProposal) in a dynamic array using an array index (idx) and 
+   * the (keccak256(p) + (index * the size of the largest derived struct)) formula. 
+   * In this case, the largest size among all the derived structs is occupied by ElectionProposal, 
+   * requiring at least 7 slots, while DecisionProposal requires at least 5 slots. 
+   * Set the found slot as the slot of the target struct (DecisionProposal), which involves down-casting 
+   * the base struct (BaseProposal) to a derived struct (DecisionProposal). Finally, validate it based on the ProposalType.   
    */
   function getDecision(ICommon.BaseProposal[] storage proposalsExtArray, uint256 idx)
     internal
@@ -132,7 +106,7 @@ library LCastingStruct {
   }
 
   /**
-   * @dev it's the same as the getDecision function with differences in target downcasting structure 
+   * @dev it's the same as the getDecision function with differences in target down-casting struct 
    * and related the ProposalType validation. the AuctionProposal only will occupy 6 slots. 
    */
   function getAuction(ICommon.BaseProposal[] storage proposalsExtArray, uint256 idx)
@@ -151,7 +125,7 @@ library LCastingStruct {
   }
 
   /**
-   * @dev it's the same as the getDecision function with differences in target downcasting structure 
+   * @dev it's the same as the getDecision function with differences in target down-casting struct 
    * and related the ProposalType validation
    */
   function getElection(ICommon.BaseProposal[] storage proposalsExtArray, uint256 idx)
@@ -170,13 +144,13 @@ library LCastingStruct {
   }
 
   /**
-   * @dev push derived structure to the Proposals dynamic array.
-   * it finds a storage slot of a derived structure (DecisionProposal) in a dynamic array data structure
-   * by the last index of the array according to the (keccak256(p) + (index * the biggest size of derived structure)) formula,
-   * in this case, the biggest size of the derived structure among all derived structures is ElectionProposal 
-   * which will occupy 7 slots at least, meanwhile the DecisionProposal will occupy 5 slots at least.
-   * finally the found slot is set to a slot of target structure (DecisionProposal) 
-   * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal). 
+   * @dev Push the derived struct (DecisionProposal) to the Proposals dynamic array. 
+   * To find the storage slot of the derived struct within the dynamic array, 
+   * use the last index of the array and the (keccak256(p) + (index * the size of the largest derived struct)) formula. 
+   * In this case, the largest size among all the derived structs is occupied by ElectionProposal, 
+   * requiring at least 7 slots, while DecisionProposal requires at least 5 slots. 
+   * Finally, set the found slot as the slot of the target structure (DecisionProposal), 
+   * which involves downcasting the base struct (BaseProposal) to a derived struct (DecisionProposal).   
    */
   function pushDecision(ICommon.BaseProposal[] storage proposalsExtArray, ICommon.DecisionProposal memory decisionProposal)
     internal    
@@ -194,7 +168,7 @@ library LCastingStruct {
   }
 
   /**
-   * @dev it's the same as the pushDecision function with differences in target downcasting structure.
+   * @dev it's the same as the pushDecision function with differences in target down-casting struct.
    * The AuctionProposal only will occupy 6 slots. 
    */
   function pushAuction(ICommon.BaseProposal[] storage proposalsExtArray, ICommon.AuctionProposal memory auctionProposal)
@@ -214,7 +188,7 @@ library LCastingStruct {
   }
 
   /**
-   * @dev it's the same as the pushDecision function with differences in target downcasting structure.
+   * @dev it's the same as the pushDecision function with differences in target down-casting struct.
    */
   function pushElection(ICommon.BaseProposal[] storage proposalsExtArray, ICommon.ElectionProposal memory electionProposal)
     internal    
@@ -235,14 +209,13 @@ library LCastingStruct {
   }
 
   /** 
-   * @dev pop last item from the Proposals dynamic array. 
-   * it finds a storage slot of a one of the derived structure in a dynamic array data structure
-   * by the last index of the array according to the (keccak256(p) + (index * the biggest of derived struct size)) formula,
-   * in this case, the biggest size of the derived structure among all derived structures is ElectionProposal 
-   * which will occupy 7 slots at least.
-   * then the found slot is set to a slot of has gotten the last derived structure 
-   * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal), 
-   * finally delete elemnets of derived structure according to specific the ProposalType.  
+   * @dev Pop the last item from the Proposals dynamic array. To find the storage slot of one of the derived structs 
+   * in the dynamic array, use the last index of the array and 
+   * the (keccak256(p) + (index * the size of the largest derived struct)) formula. 
+   * In this case, the largest size among all the derived structs is occupied by ElectionProposal, 
+   * which requires at least 7 slots. Set the found slot as the slot containing the last derived struct, 
+   * which involves down-casting the base struct (BaseProposal) to a derived struct based on the specific ProposalType (Decision, Auction, Election). 
+   * Finally, delete elements of the derived struct.
    */
   function popItem(ICommon.BaseProposal[] storage proposalsExtArray) internal { 
     require(proposalsExtArray.length > 0, "Invalid Pop");
@@ -280,16 +253,16 @@ library LCastingStruct {
   }
 
   /** 
-   * @dev for memory downcasting of base structure to derived structure,  
-   * it should find a memory address pointer of the derived structure according to the
-   *
-   *    (base struct address pointer - (0x20 * member counts of derived struct)) formula,
-   *
+   * @dev for memory down-casting of the base struct to the derived struct,  
+   * it should find a memory address pointer of the derived struct according to the
+   * 
+   *    (base struct address pointer - (size of memory slot * member counts of derived struct)) formula,
+   * 
    * in this case, the difference between the BaseProposal and DecisionProposal address pointers is 2 * 0x20,
-   * then the found address is set to a pointer of target derived structure (DecisionProposal)
-   * which means downcasting a base struct (BaseProposal) to a derived structure (DecisionProposal).
-   *
-   * Note: the mentioned formula is only true when the base structure is the first member defined in the derived structure.
+   * then the found address is set to a pointer of target derived struct (DecisionProposal)
+   * which means down-casting a base struct (BaseProposal) to a derived struct (DecisionProposal).
+   * 
+   * Note: the mentioned formula is only true when the base struct is the first member defined in the derived struct.
    */
   function memoryGetDecision(ICommon.BaseProposal memory bp) internal pure returns (ICommon.DecisionProposal memory dp) {
 

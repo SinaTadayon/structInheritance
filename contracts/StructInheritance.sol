@@ -7,8 +7,8 @@ import "./LCastingStruct.sol";
 /**
  * @title the structure inheritance over composition sample
  * @author Sina Tadayon, https://github.com/SinaTadayon
- * @dev it contains functions to test down-casting base structure
- * to derived structure in mapping, dynamic array storages, and memory area.
+ * @dev It contains functions to test down-casting of the base struct to derived structs in mapping, 
+ * dynamic array storages, and memory area.
  *
  */
 contract StructInheritance {  
@@ -76,8 +76,8 @@ contract StructInheritance {
   }
 
   /**
-   * @dev extendedMappingTest() tests upcasting base structure (BaseProposal) from derived structures (DecisionProposal, etc) and 
-   * downcasting base structure to derived structures as well.
+   * @dev The extendedMappingTest() function tests the up-casting of derived structs (DecisionProposal, etc.) to 
+   * the base struct (BaseProposal), as well as the downcasting of the base structure to derived structures.
    */
   function extendedMappingTest() public {
      // Decision Proposal
@@ -146,12 +146,12 @@ contract StructInheritance {
   }
   
    /**
-   * @dev extendedArrayTest() tests upcasting base structure (BaseProposal)
-   * from derived structures (DecisionProposal, etc) and downcasting base structure to derived structures as well.
-   * it also uses pushXXX, popItem, and getXXX functions which defined in the library for each derived structure.
+   * @dev The extendedArrayTest() function tests the up-casting of derived structs (DecisionProposal, etc.) to the base struct (BaseProposal), 
+   * as well as the down-casting of the base struct to derived structs. It also utilizes the pushXXX, popItem, 
+   * and getXXX functions, which are defined in the library for each derived structure.
    *
-   * Note: Don't use the default push, pop functions, and [] operator of the dynamic array, 
-   * because they couldn't manage storage slots of the derived structure behind of downcasting action properly.
+   * Note: Avoid using the default push, pop functions, and array subscripting ([]) operator of the dynamic array 
+   * since they may not properly manage the storage slots of the derived struct during down-casting actions."
    */
   function extendedArrayTest() public {   
     // Push Auction Proposal
@@ -259,8 +259,7 @@ contract StructInheritance {
   }
 
   /**
-   * @dev extendedFunctionTest() tests upcasting base structure (BaseProposal) from derived structures (DecisionProposal, etc) and 
-   * downcasting base structure to derived structures in the memory area as well.
+   * @dev extendedFunctionTest() up-casting derived structs (DecisionProposal, etc) to base struct (BaseProposal) with passing arguments to validateProposal
    */
   function extendedFunctionTest() public view {
     ICommon.DecisionProposal memory dp = decisionProposal;
@@ -273,7 +272,7 @@ contract StructInheritance {
   }
 
   /**
-   * @dev validate proposal types
+   * @dev validateProposal() down-casting base struct to derived structs in the memory area.
    */
   function validateProposal(ICommon.BaseProposal memory bp) public pure {
     if(bp.ptype == ICommon.ProposalType.DECISION) {
@@ -293,4 +292,5 @@ contract StructInheritance {
       require(ep.nominators[0] == 0xb95D435df3f8b2a8D8b9c2b7c8766C9ae6ED8cc9, "Invalid Nom");
     }
   }
+
 }
