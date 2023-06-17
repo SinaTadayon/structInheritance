@@ -1,14 +1,14 @@
-# Structure Inheritance Implementation
-This is a sample implementation for Structure Inheritance by the composition over inheritance in the Solidity.
-This technique is implemented for mapping type, dynamic array type in the storage mode, and also internal function parameters.It supports only the Solidity compiler 
-series ^0.7.0 and ^0.8.0.
-
+# Struct Inheritance Implementation
+This is a sample implementation of Structure Inheritance using composition over inheritance in Solidity. 
+This technique is implemented for mapping types, dynamic array types in storage mode, and associated functions. 
+It is compatible with Solidity compiler versions ^0.7.0 and ^0.8.0.
+The main articles can be found on Medium with the following links:
 
 
 ## Installation
 1. Clone this repository:
 ```console
-git clone https://github.com/SinaTadayon/structureInheritance.git 
+git clone https://github.com/SinaTadayon/structInheritance.git 
 ```
 
 2. Install NPM packages:
